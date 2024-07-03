@@ -138,6 +138,9 @@ function h = daviolinplot(Y,varargin)
 %   'legend'          Names of groups (a cell) for creating a legend
 %                     Default: no legend
 %
+%   'orientation'     Violin orientation: 'vertical' or 'horizontal'
+%                     Default: vertical
+%
 %
 % Output Arguments:
 %
@@ -196,6 +199,7 @@ addOptional(p, 'linkline',0);
 addOptional(p, 'withinlines',0);
 addOptional(p, 'xtlabels', []);
 addOptional(p, 'legend', []);
+addOptional(p, 'orientation','vertical', @(x) ismember(x, {'vertical', 'horizontal'}));
 
 % parse the input options
 parse(p, varargin{:});
@@ -342,14 +346,20 @@ for g = 1:num_groups
         f = confs.violinwidth.*(f/max(f))*(21*box_width/(num_groups+7));
 
         % plot the violin
-        if strcmp(confs.violin,'full')            
-            h.ds(k,g) = fill([f,-fliplr(f)]+gpos(g,k),...
-                [xi,fliplr(xi)],confs.colors(g,:));            
-        elseif strcmp(confs.violin,'half')   
+        if strcmp(confs.violin,'full')
+            [x,y] = adjustAxisOrientation(confs.orientation,...
+                        [f,-fliplr(f)]+gpos(g,k),...
+                        [xi,fliplr(xi)]);
+            h.ds(k,g) = fill(x,y,confs.colors(g,:));            
+        elseif strcmp(confs.violin,'half') 
             if confs.box==3
-                h.ds(k,g) = fill(1.3.*f+gpos(g,k),xi,confs.colors(g,:));
+                [x,y] = adjustAxisOrientation(confs.orientation,...
+                            1.3.*f+gpos(g,k),xi);
+                h.ds(k,g) = fill(x,y,confs.colors(g,:));
             else
-                h.ds(k,g) = fill(f+gpos(g,k),xi,confs.colors(g,:));
+                [x,y] = adjustAxisOrientation(confs.orientation,...
+                            f+gpos(g,k),xi);
+                h.ds(k,g) = fill(x,y,confs.colors(g,:));
             end 
         end       
         
@@ -365,17 +375,22 @@ for g = 1:num_groups
             
             % draw boxes
             if strcmp(confs.boxcolors,'same')
-                h.bx(k,g) = fill([Xx(:,1)' Xx(1,:) Xx(:,2)' Xx(2,[2,1])],...
-                     [Yy(:,1)' Yy(1,:) Yy(:,2)' Yy(2,:)],confs.colors(g,:)); 
+                [x,y] = adjustAxisOrientation(confs.orientation,...
+                            [Xx(:,1)' Xx(1,:) Xx(:,2)' Xx(2,[2,1])],...
+                            [Yy(:,1)' Yy(1,:) Yy(:,2)' Yy(2,:)]);
+                h.bx(k,g) = fill(x,y,confs.colors(g,:)); 
             else
-                h.bx(k,g) = fill([Xx(:,1)' Xx(1,:) Xx(:,2)' Xx(2,[2,1])],...
-                     [Yy(:,1)' Yy(1,:) Yy(:,2)' Yy(2,:)],bcol);
+                [x,y] = adjustAxisOrientation(confs.orientation,...
+                            [Xx(:,1)' Xx(1,:) Xx(:,2)' Xx(2,[2,1])],...
+                            [Yy(:,1)' Yy(1,:) Yy(:,2)' Yy(2,:)]);
+                h.bx(k,g) = fill(x,y,bcol);
             end
             set(h.bx(k,g),'FaceAlpha',confs.boxalpha); 
             
             % draw the median
-            h.md(k,g) = line(Xx(1,:), box_medcor(win_k),...
-                'color',mcol,'LineWidth', 2);
+            [x,y] = adjustAxisOrientation(confs.orientation,...
+                        Xx(1,:), box_medcor(win_k));
+            h.md(k,g) = line(x,y,'color',mcol,'LineWidth', 2);
             
             % draw whiskers
             if confs.whiskers==1
@@ -388,9 +403,12 @@ for g = 1:num_groups
                 whi_ycor(:,2,k) = [max(data_vals(~ou)), pt(5,k)]; % upwhisk
                 
                 % plot whiskers
-                h.wh(k,g,:) = plot(whi_xcor(:,k),whi_ycor(:,1,k),'k-',... 
-                    whi_xcor(:,k),whi_ycor(:,2,k),'k-',... 
-                    'LineWidth',1.5);                              
+                [x,y] = adjustAxisOrientation(confs.orientation,...
+                            whi_xcor(:,k),whi_ycor(:,1,k));
+                h.wh(k,g,1) = plot(x,y,'k-','LineWidth',1.5);
+                [x,y] = adjustAxisOrientation(confs.orientation,...
+                            whi_xcor(:,k),whi_ycor(:,2,k));
+                h.wh(k,g,2) = plot(x,y,'k-','LineWidth',1.5);                             
             end             
         end
         
@@ -445,20 +463,24 @@ for g = 1:num_groups
         if confs.outliers==1    
             ox = data_vals<(pt(3,k)-confs.outfactor*IQR(k)) | ...
                  data_vals>(pt(5,k)+confs.outfactor*IQR(k));
-            h.ot(k,g) = scatter(xdata(ox),data_vals(ox),confs.scattersize,...
+            [x,y] = adjustAxisOrientation(confs.orientation,...
+                        xdata(ox),data_vals(ox));
+            h.ot(k,g) = scatter(x,y,confs.scattersize,...
                 confs.outsymbol);    
         end            
 
         % scatter the data
         if confs.scatter~=0 
+            [x,y] = adjustAxisOrientation(confs.orientation,...
+                        xdata(~ox),data_vals(~ox));
             if strcmp(confs.scattercolors,'same')
-                h.sc(k,g) = scatter(xdata(~ox),data_vals(~ox),...
+                h.sc(k,g) = scatter(x,y,...
                     confs.scattersize,...
                     'MarkerFaceColor', confs.colors(g,:),...
                     'MarkerEdgeColor', 'k',...
                     'MarkerFaceAlpha', confs.scatteralpha);  
             else
-                h.sc(k,g) = scatter(xdata(~ox),data_vals(~ox),...
+                h.sc(k,g) = scatter(x,y,...
                     confs.scattersize,...
                     'MarkerFaceColor', scol,...
                     'MarkerEdgeColor', ecol,...
@@ -469,15 +491,19 @@ for g = 1:num_groups
     
     % draw a line that links each group across conditions
     if confs.linkline==1
-       h.ln(g) = line(gpos(g,:),pt(4,:),'color',confs.colors(g,:),...
-           'LineStyle','-.','LineWidth',1.5); 
+        [x,y] = adjustAxisOrientation(confs.orientation,...
+                    gpos(g,:),pt(4,:));
+        h.ln(g) = line(x,y,'color',confs.colors(g,:),...
+            'LineStyle','-.','LineWidth',1.5); 
     end
 
     % link individual within group data points
     if confs.withinlines==1
-        for s = 1:size(scdata{g},1)                
-            h.wl(g) = plot(squeeze(scdata{g}(s,1,:)),...
-                squeeze(scdata{g}(s,2,:)),'color', [0.8 0.8 0.8]);
+        for s = 1:size(scdata{g},1) 
+            [x,y] = adjustAxisOrientation(confs.orientation,...
+                squeeze(scdata{g}(s,1,:)),...
+                    squeeze(scdata{g}(s,2,:)));               
+            h.wl(g) = plot(x,y,'color', [0.8 0.8 0.8]);
             uistack(h.wl(g),'bottom')
         end
     end
@@ -494,12 +520,26 @@ if ~isempty(confs.legend)
 end
 
 % set ticks and labels
-set(gca,'XTick',cpos,'XTickLabels',cpos,'box','off');
-if ~isempty(confs.xtlabels)
-    set(gca,'XTickLabels',confs.xtlabels,'XTick',cpos);
-end  
+if strcmp(confs.orientation,'vertical')
+    set(gca,'XTick',cpos,'XTickLabels',cpos,'box','off');
+    if ~isempty(confs.xtlabels)
+        set(gca,'XTickLabels',confs.xtlabels,'XTick',cpos);
+    end 
+    xlim([gpos(1)-3*box_width, gpos(end)+3*box_width]); % adjust x-axis margins
+else
+    set(gca,'YTick',cpos,'YTickLabels',cpos,'box','off');
+    if ~isempty(confs.xtlabels)
+        set(gca,'YTickLabels',confs.xtlabels,'YTick',cpos);
+    end
+    ylim([gpos(1)-3*box_width, gpos(end)+3*box_width]); % adjust y-axis margins
+end
 
-xlim([gpos(1)-3*box_width, gpos(end)+3*box_width]); % adjust x-axis margins
-
+function [x,y] = adjustAxisOrientation(orientation,x,y)
+    if strcmp(orientation,'horizontal')
+        tmp = x;
+        x = y;
+        y = tmp;
+    end
+end
 
 end

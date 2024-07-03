@@ -8,6 +8,7 @@
 clear all
 rng('default')
 
+orientation = 'horizontal';
 % data in a numreic array (+ grouping indices)
 data1 = [3,4,5,6] + [randn([30,4]); randn([30,4]);...
                      randn([30,4]);randn([30,4])];
@@ -37,27 +38,28 @@ c =  [0.45, 0.80, 0.69;...
       0.55, 0.60, 0.79;...
       0.90, 0.70, 0.30];  
    
-figure('Name', 'dabarplot_demo','WindowStyle','docked');
+figure(1);
+clf
 
 % default bar plots for one group and three conditions 
 subplot(2,3,1)
-h = dabarplot(data1,'groups',group_inx(1:30));
+h = dabarplot(data1,'groups',group_inx(1:30),'orientation',orientation);
 
 % non-filled grouped bar plots for two groups
 subplot(2,3,2)
 h = dabarplot(data1(1:60,:),'groups',group_inx(1:60),'errorbars','WSE',...
-    'xtlabels', condition_names,'fill',0,'legend',group_names(1:2));
-ylabel('Performance');
-xl = xlim; xlim([xl(1), xl(2)+1]);  % make more space for the legend
+    'xtlabels', condition_names,'fill',0,'legend',group_names(1:2),'orientation',orientation);
+% ylabel('Performance');
+% xl = xlim; xlim([xl(1), xl(2)+1]);  % make more space for the legend
 set(gca,'FontSize',11);
 
 % filled bar plots, different color scheme, standard deviation error bars
 subplot(2,3,3)
 h = dabarplot(data1(:,1:3),'groups',group_inx(1:90),'errorbars','SD',...
     'xtlabels', condition_names,'legend',group_names(1:3),'color',c,...
-    'errorhats',0);
-ylabel('Performance');
-xl = xlim; xlim([xl(1), xl(2)+1]);  % make more space for the legend
+    'errorhats',0,'orientation',orientation);
+% ylabel('Performance');
+% xl = xlim; xlim([xl(1), xl(2)+1]);  % make more space for the legend
 set(gca,'FontSize',11);
 
 % bar plots with a data scatter on top, rotated horizontally
@@ -65,30 +67,32 @@ subplot(2,3,4)
 h = dabarplot(data1,'groups',group_inx,...
     'xtlabels', condition_names,'errorbars',0,...
     'scatter',1,'scattersize',15,'scatteralpha',0.5,...
-    'barspacing',0.8,'legend',group_names); 
-ylabel('Performance');
-yl = ylim; ylim([yl(1), yl(2)+2]);  % make more space for the legend
+    'barspacing',0.8,'legend',group_names,'orientation',orientation); 
+% ylabel('Performance');
+% yl = ylim; ylim([yl(1), yl(2)+2]);  % make more space for the legend
 set(gca,'FontSize',11);
-camroll(-90)
+% camroll(-90)
 
 % stacked bar plots and added numbers to emphasize condition differences
 subplot(2,3,5)
 h = dabarplot(data3,'group',[1,2,3,4],'xtlabels', condition_names,...
-    'colors',c,'bartype','stacked','numbers',1,'round',1); 
-ylabel('Performance');
+    'colors',c,'bartype','stacked','numbers',1,'round',1,'orientation',orientation); 
+% ylabel('Performance');
 legend([h.br(1,:)],group_names);    % add the legend manually
-xl = xlim; xlim([xl(1), xl(2)+1]);  % make more space for the legend
-ylim([0 18]); set(gca,'FontSize',11);
+% xl = xlim; xlim([xl(1), xl(2)+1]);  % make more space for the legend
+% ylim([0 18]); 
+set(gca,'FontSize',11);
 
 % stacked plot and added numbers to emphasize group differences
 subplot(2,3,6)
 h = dabarplot(datap,'group',[1,2,3,4],'xtlabels', condition_names,...
     'colors',c,'scattersize',16,'bartype','stacked','numbers',2, ...
-    'round',0); 
-ylabel('Contribution (%)');
+    'round',0,'orientation',orientation); 
+% ylabel('Contribution (%)');
 legend([h.br(1,:)],group_names);    % add the legend manually
-xl = xlim; xlim([xl(1), xl(2)+1]);  % make more space for the legend
-ylim([0 100]); set(gca,'FontSize',11);
+% xl = xlim; xlim([xl(1), xl(2)+1]);  % make more space for the legend
+% ylim([0 100]); 
+set(gca,'FontSize',11);
 
 
 

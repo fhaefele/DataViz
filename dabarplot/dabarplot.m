@@ -108,6 +108,9 @@ function h = dabarplot(Y,varargin)
 %   'legend'          Names of groups (a cell) for creating a legend
 %                     Default: no legend
 %
+%   'orientation'     Barplot orientation: 'vertical' or 'horizontal'
+%                     Default: vertical
+%
 %
 % Output Arguments:
 %
@@ -160,6 +163,7 @@ addOptional(p, 'numbers', 0);
 addOptional(p, 'round', 0);
 addOptional(p, 'xtlabels', []);
 addOptional(p, 'legend', []);
+addOptional(p, 'orientation','vertical', @(x) ismember(x, {'vertical', 'horizontal'}));
 
 % parse the input options
 parse(p, varargin{:});
@@ -344,17 +348,19 @@ for g = 1:num_groups
 
         % filled or not filled bars
         if confs.fill==0 
-                        
             % no fill bar
-            h.br(k,g) = line([Xx(:,1)' Xx(1,:) Xx(:,2)' Xx(2,:)],...
-                [Yy(:,1)' Yy(1,:) Yy(:,2)' Yy(2,:)],...
-                'color',confs.colors(gk,:),'LineWidth',1.5); 
+            [x,y] = adjustAxisOrientation(confs.orientation,...
+                        [Xx(:,1)' Xx(1,:) Xx(:,2)' Xx(2,:)],...
+                        [Yy(:,1)' Yy(1,:) Yy(:,2)' Yy(2,:)]);
+            h.br(k,g) = line(x,y,'color',confs.colors(gk,:),'LineWidth',1.5); 
             hold on;            
             
         elseif confs.fill==1
             % bar filled with color 
-            h.br(k,g) = fill([Xx(:,1)' Xx(1,:) Xx(:,2)' Xx(2,[2,1])],...
-                 [Yy(:,1)' Yy(1,:) Yy(:,2)' Yy(2,:)],confs.colors(gk,:));            
+            [x,y] = adjustAxisOrientation(confs.orientation,...
+                        [Xx(:,1)' Xx(1,:) Xx(:,2)' Xx(2,[2,1])],...
+                        [Yy(:,1)' Yy(1,:) Yy(:,2)' Yy(2,:)]);
+            h.br(k,g) = fill(x,y,confs.colors(gk,:));            
             set(h.br(k,g),'FaceAlpha',confs.baralpha); 
             hold on;
         end  
@@ -364,29 +370,42 @@ for g = 1:num_groups
         % draw outliers
         if confs.outliers==1          
             ox = data_vals<whi_ycor(1,1,k) | data_vals>whi_ycor(1,2,k);
-            h.ot(k,g) = scatter(xdata(ox),data_vals(ox),confs.scattersize,...
+            [x,y] = adjustAxisOrientation(confs.orientation,...
+                        xdata(ox),data_vals(ox));
+            h.ot(k,g) = scatter(x,y,confs.scattersize,...
                 confs.symbol);            
         end        
         
         % draw error bars
         if ischar(confs.errorbars) && strcmp(confs.bartype,'grouped')
             if confs.errorhats==1
-                h.wh(k,g,:) = plot(whi_xcor(:,k),whi_ycor(:,1,k),'k-',... 
-                    hat_xcor(:,k),[whi_ycor(1,1,k) whi_ycor(1,1,k)],'k-',... 
-                    whi_xcor(:,k),whi_ycor(:,2,k),'k-',... 
-                    hat_xcor(:,k),[whi_ycor(1,2,k) whi_ycor(1,2,k)],'k-',... 
-                    'LineWidth',1);   
+                [x,y] = adjustAxisOrientation(confs.orientation,...
+                            whi_xcor(:,k),whi_ycor(:,1,k));
+                h.wh(k,g,1) = plot(x,y,'k-','LineWidth',1);
+                [x,y] = adjustAxisOrientation(confs.orientation,...
+                            hat_xcor(:,k),[whi_ycor(1,1,k) whi_ycor(1,1,k)]);
+                h.wh(k,g,2) = plot(x,y,'k-','LineWidth',1);
+                [x,y] = adjustAxisOrientation(confs.orientation,...
+                            whi_xcor(:,k),whi_ycor(:,2,k));
+                h.wh(k,g,3) = plot(x,y,'k-','LineWidth',1);
+                [x,y] = adjustAxisOrientation(confs.orientation,...
+                            hat_xcor(:,k),[whi_ycor(1,2,k) whi_ycor(1,2,k)]);
+                h.wh(k,g,4) = plot(x,y,'k-','LineWidth',1);   
             elseif confs.errorhats==0
-                h.wh(k,g,:) = plot(whi_xcor(:,k),whi_ycor(:,1,k),'k-',...
-                    whi_xcor(:,k),whi_ycor(:,2,k),'k-',...
-                    'LineWidth',1); 
+                [x,y] = adjustAxisOrientation(confs.orientation,...
+                            whi_xcor(:,k),whi_ycor(:,1,k));
+                h.wh(k,g,1) = plot(x,y,'k-','LineWidth',1);
+                [x,y] = adjustAxisOrientation(confs.orientation,...
+                            whi_xcor(:,k),whi_ycor(:,2,k));
+                h.wh(k,g,2) = plot(x,y,'k-','LineWidth',1);
             end
         end 
 
         % scatter on top of the bar plots
-        if confs.scatter==1 || confs.scatter==2           
-            h.sc(k,g) = scatter(xdata(~ox),data_vals(~ox),...
-                confs.scattersize,...
+        if confs.scatter==1 || confs.scatter==2   
+            [x,y] = adjustAxisOrientation(confs.orientation,...
+                        xdata(~ox),data_vals(~ox));        
+            h.sc(k,g) = scatter(x,y, confs.scattersize,...
                 'MarkerFaceColor', confs.scattercolors{1},...
                 'MarkerEdgeColor', confs.scattercolors{2},...
                 'MarkerFaceAlpha', confs.scatteralpha); 
@@ -397,8 +416,9 @@ for g = 1:num_groups
 
     % add number values on top of the stacked bars
     if confs.numbers == 2 && strcmp(confs.bartype,'stacked')
-       h.nm{g} = text(cpos,...
-           mean(bar_ycor(:,1:2:end)),string(round(means,confs.round)),...
+        [x,y] = adjustAxisOrientation(confs.orientation,...
+                    cpos,mean(bar_ycor(:,1:2:end)));
+        h.nm{g} = text(x,y,string(round(means,confs.round)),...
            'HorizontalAlignment', 'center',"FontSize",11);
     end
         
@@ -413,8 +433,9 @@ end
 if confs.numbers == 1
     vv = max([yt(end,1:2:end); yb(end,1:2:end)]); % value vector
     lv = 0.05*max(vv) + vv;                       % value location
-    h.nm = text(cpos,...
-       lv,string(round(vv,confs.round)),...
+    [x,y] = adjustAxisOrientation(confs.orientation,...
+                cpos,lv);
+    h.nm = text(x,y,string(round(vv,confs.round)),...
        'HorizontalAlignment', 'center',"FontSize",11);
 end
 
@@ -424,11 +445,26 @@ if ~isempty(confs.legend)
 end
 
 % set ticks and labels
-set(gca,'XTick',cpos,'XTickLabels',cpos,'box','off');
-if ~isempty(confs.xtlabels)
-    set(gca,'XTickLabels',confs.xtlabels,'XTick',cpos);
-end  
+if strcmp(confs.orientation,'vertical')
+    set(gca,'XTick',cpos,'XTickLabels',cpos,'box','off');
+    if ~isempty(confs.xtlabels)
+        set(gca,'XTickLabels',confs.xtlabels,'XTick',cpos);
+    end 
+    xlim([gpos(1)-bar_width, gpos(end)+bar_width]); % adjust x-axis margins
+else
+    set(gca,'YTick',cpos,'YTickLabels',cpos,'box','off');
+    if ~isempty(confs.xtlabels)
+        set(gca,'YTickLabels',confs.xtlabels,'YTick',cpos);
+    end
+    ylim([gpos(1)-bar_width, gpos(end)+bar_width]); % adjust y-axis margins
+end
 
-xlim([gpos(1)-bar_width, gpos(end)+bar_width]); % adjust x-axis margins
+function [x,y] = adjustAxisOrientation(orientation,x,y)
+    if strcmp(orientation,'horizontal')
+        tmp = x;
+        x = y;
+        y = tmp;
+    end
+end
 
 end
