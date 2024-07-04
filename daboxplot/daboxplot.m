@@ -121,6 +121,9 @@ function h = daboxplot(Y,varargin)
 %   'orientation'     Boxplot orientation: 'vertical' or 'horizontal'
 %                     Default: vertical
 %
+%   'parent'          Parent axes handle. 
+%                     Default: gca
+%
 %
 % Output Arguments:
 %
@@ -175,6 +178,7 @@ addOptional(p, 'withinlines',0);
 addOptional(p, 'xtlabels', []);
 addOptional(p, 'legend', []);
 addOptional(p, 'orientation','vertical', @(x) ismember(x, {'vertical', 'horizontal'}));
+addOptional(p, 'parent',gca, @(x) isa(x,'matlab.graphics.axis.Axes'));
 
 % parse the input options
 parse(p, varargin{:});
@@ -306,20 +310,23 @@ for g = 1:num_groups
             [x,y] = adjustAxisOrientation(confs.orientation,...
                         [Xx(:,1)' Xx(1,:) Xx(:,2)' Xx(2,:)],...
                         [Yy(:,1)' Yy(1,:) Yy(:,2)' Yy(2,:)]);
-            h.bx(k,g) = line(x,y,'color',confs.colors(g,:),'LineWidth',1.5); 
+            h.bx(k,g) = line(x,y,'color',confs.colors(g,:), ...
+                            'LineWidth',1.5,'parent',confs.parent); 
             hold on;        
             
             % draw the median
             [x,y] = adjustAxisOrientation(confs.orientation,...
                         Xx(1,:), box_mdcor(wk));
-            h.md(k,g) = line(x,y,'color',confs.colors(g,:), 'LineWidth', 2);            
+            h.md(k,g) = line(x,y,'color',confs.colors(g,:), ...
+                            'LineWidth', 2,'parent',confs.parent);            
             
             % draw the mean
             if confs.mean==1
                 [x,y] = adjustAxisOrientation(confs.orientation,...
                             Xx(1,:),box_mncor(wk));
                 h.mn(k,g) = line(x,y,'LineStyle',':',...
-                    'color',confs.colors(g,:),'LineWidth', 1.5);
+                    'color',confs.colors(g,:), ...
+                    'LineWidth', 1.5,'parent',confs.parent);
             end           
             
         elseif confs.fill==1
@@ -327,21 +334,21 @@ for g = 1:num_groups
             [x,y] = adjustAxisOrientation(confs.orientation,...
                         [Xx(:,1)' Xx(1,:) Xx(:,2)' Xx(2,[2,1])],...
                         [Yy(:,1)' Yy(1,:) Yy(:,2)' Yy(2,:)]);
-            h.bx(k,g) = fill(x,y,confs.colors(g,:));            
+            h.bx(k,g) = fill(x,y,confs.colors(g,:),'parent',confs.parent);            
             set(h.bx(k,g),'FaceAlpha',confs.boxalpha); 
             hold on;
 
             % draw the median
             [x,y] = adjustAxisOrientation(confs.orientation,...
                         Xx(1,:), box_mdcor(wk));
-            h.md(k,g) = line(x,y,'color','k', 'LineWidth', 2);
+            h.md(k,g) = line(x,y,'color','k', 'LineWidth', 2,'parent',confs.parent);
             
             % draw the mean
             if confs.mean==1
                 [x,y] = adjustAxisOrientation(confs.orientation,...
                             Xx(1,:),box_mncor(wk));
                 h.mn(k,g) = line(x,y,'LineStyle',':',...
-                    'color','k','LineWidth', 1.5);
+                    'color','k','LineWidth', 1.5,'parent',confs.parent);
             end
         end        
         
@@ -353,23 +360,23 @@ for g = 1:num_groups
             [x,y] = adjustAxisOrientation(confs.orientation,...
                         xdata(ox),data_vals(ox));
             h.ot(k,g) = scatter(x,y,confs.scattersize,...
-                confs.outsymbol);            
+                confs.outsymbol,'parent',confs.parent,'parent',confs.parent);            
         end
 
         % draw whiskers
         if confs.whiskers==1  
             [x,y] = adjustAxisOrientation(confs.orientation,...
                         whi_xcor(:,k),whi_ycor(:,k));
-            h.wh(k,g,1) = plot(x,y,'k-','LineWidth',1);
+            h.wh(k,g,1) = plot(x,y,'k-','LineWidth',1,'parent',confs.parent);
             [x,y] = adjustAxisOrientation(confs.orientation,...
                 hat_xcor(:,k),[whi_ycor(1,1,k) whi_ycor(1,1,k)]);
-            h.wh(k,g,2) = plot(x,y,'k-','LineWidth',1);
+            h.wh(k,g,2) = plot(x,y,'k-','LineWidth',1,'parent',confs.parent);
             [x,y] = adjustAxisOrientation(confs.orientation,...
                 whi_xcor(:,k),whi_ycor(:,2,k));
-            h.wh(k,g,3) = plot(x,y,'k-','LineWidth',1);
+            h.wh(k,g,3) = plot(x,y,'k-','LineWidth',1,'parent',confs.parent);
             [x,y] = adjustAxisOrientation(confs.orientation,...
                 hat_xcor(:,k),[whi_ycor(1,2,k) whi_ycor(1,2,k)]);
-            h.wh(k,g,4) = plot(x,y,'k-','LineWidth',1);                         
+            h.wh(k,g,4) = plot(x,y,'k-','LineWidth',1,'parent',confs.parent);                         
         end 
 
         % scatter on top of the boxplots
@@ -380,7 +387,8 @@ for g = 1:num_groups
                 confs.scattersize,...
                 'MarkerFaceColor', confs.scattercolors{1},...
                 'MarkerEdgeColor', confs.scattercolors{2},...
-                'MarkerFaceAlpha', confs.scatteralpha); 
+                'MarkerFaceAlpha', confs.scatteralpha,...
+                'parent',confs.parent); 
             hold on; 
             
         end        
@@ -392,7 +400,7 @@ for g = 1:num_groups
         [x,y] = adjustAxisOrientation(confs.orientation,...
                     gpos(g,:),pt(4,:));
         h.ln(g) = line(x,y,'color',confs.colors(g,:),...
-           'LineStyle','-.','LineWidth',1.5); 
+           'LineStyle','-.','LineWidth',1.5,'parent',confs.parent); 
     end
     
     % link individual within group data points
@@ -401,7 +409,8 @@ for g = 1:num_groups
             [x,y] = adjustAxisOrientation(confs.orientation,...
                         squeeze(scdata{g}(s,1,:)),...
                         squeeze(scdata{g}(s,2,:)));
-            h.wl(g) = plot(x,y,'color', [0.8 0.8 0.8]);
+            h.wl(g) = plot(x,y,'color', [0.8 0.8 0.8], ...
+                        'parent',confs.parent);
             uistack(h.wl(g),'bottom')
         end
     end
