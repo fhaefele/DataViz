@@ -249,6 +249,7 @@ end
 h.gpos = gpos;
 h.cpos = cpos; 
 
+hold(confs.parent,'on');
 % loop over groups
 for g = 1:num_groups 
     
@@ -312,7 +313,6 @@ for g = 1:num_groups
                         [Yy(:,1)' Yy(1,:) Yy(:,2)' Yy(2,:)]);
             h.bx(k,g) = line(x,y,'color',confs.colors(g,:), ...
                             'LineWidth',1.5,'parent',confs.parent); 
-            hold on;        
             
             % draw the median
             [x,y] = adjustAxisOrientation(confs.orientation,...
@@ -336,7 +336,6 @@ for g = 1:num_groups
                         [Yy(:,1)' Yy(1,:) Yy(:,2)' Yy(2,:)]);
             h.bx(k,g) = fill(x,y,confs.colors(g,:),'parent',confs.parent);            
             set(h.bx(k,g),'FaceAlpha',confs.boxalpha); 
-            hold on;
 
             % draw the median
             [x,y] = adjustAxisOrientation(confs.orientation,...
@@ -389,8 +388,6 @@ for g = 1:num_groups
                 'MarkerEdgeColor', confs.scattercolors{2},...
                 'MarkerFaceAlpha', confs.scatteralpha,...
                 'parent',confs.parent); 
-            hold on; 
-            
         end        
         
     end        
@@ -433,6 +430,7 @@ for g = 1:num_groups
     end 
     
 end
+hold(confs.parent,'off');
 
 % move lines to the background
 if confs.linkline==1
@@ -478,15 +476,15 @@ end
 
 % set ticks and labels
 if strcmp(confs.orientation,'vertical')
-    set(gca,'XTick',cpos,'XTickLabels',cpos,'box','off');
+    set(confs.parent,'XTick',cpos,'XTickLabels',cpos,'box','off');
     if ~isempty(confs.xtlabels)
-        set(gca,'XTickLabels',confs.xtlabels,'XTick',cpos);
+        set(confs.parent,'XTickLabels',confs.xtlabels,'XTick',cpos);
     end 
     xlim([gpos(1)-3*box_width, gpos(end)+3*box_width]); % adjust x-axis margins
 else
-    set(gca,'YTick',cpos,'YTickLabels',cpos,'box','off');
+    set(confs.parent,'YTick',cpos,'YTickLabels',cpos,'box','off');
     if ~isempty(confs.xtlabels)
-        set(gca,'YTickLabels',confs.xtlabels,'YTick',cpos);
+        set(confs.parent,'YTickLabels',confs.xtlabels,'YTick',cpos);
     end
     ylim([gpos(1)-3*box_width, gpos(end)+3*box_width]); % adjust y-axis margins
 end
