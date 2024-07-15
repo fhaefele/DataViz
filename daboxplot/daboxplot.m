@@ -480,13 +480,13 @@ if strcmp(confs.orientation,'vertical')
     if ~isempty(confs.xtlabels)
         set(confs.parent,'XTickLabels',confs.xtlabels,'XTick',cpos);
     end 
-    xlim([gpos(1)-3*box_width, gpos(end)+3*box_width]); % adjust x-axis margins
+    xlim(confs.parent,[gpos(1)-3*box_width, gpos(end)+3*box_width]); % adjust x-axis margins
 else
     set(confs.parent,'YTick',cpos,'YTickLabels',cpos,'box','off');
     if ~isempty(confs.xtlabels)
         set(confs.parent,'YTickLabels',confs.xtlabels,'YTick',cpos);
     end
-    ylim([gpos(1)-3*box_width, gpos(end)+3*box_width]); % adjust y-axis margins
+    ylim(confs.parent,[gpos(1)-3*box_width, gpos(end)+3*box_width]); % adjust y-axis margins
 end
 
 
